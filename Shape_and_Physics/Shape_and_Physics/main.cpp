@@ -33,6 +33,8 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
+    
+    gladLoadGL();
 
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -48,9 +50,9 @@ int main(void)
 
 
     /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window)) // purple
     {
-
+        /*set the fram color buffer in RGB values*/
         glClearColor(0.7f, 0.0f, 0.8f, 0.4f);
         glClear(GL_COLOR_BUFFER_BIT);
 
