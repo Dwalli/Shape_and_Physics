@@ -45,7 +45,34 @@ int main(void)
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  /* For this to work on mac uncomment this code */
 
 
-    GLuint vertexShader;  /* create shader object to stor the vertex shaders */
+    GLFWwindow* window;
+
+    /* Create a windowed mode window and its OpenGL context */
+    window = glfwCreateWindow(1600, 1024, "Shape and Physics", NULL, NULL);
+
+    if (!window)
+    {
+        std::cout << "Failed to creat GLFW Window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+
+    /* Make the window's context current */
+    glfwMakeContextCurrent(window);
+    
+    gladLoadGL();
+
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+
+        std::cout << "Failed to Load GLAD" << std::endl;
+        return -1;
+
+    }
+
+
+    GLuint vertexShader;  /* create shader object to store the vertex shaders */
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
     // attach the shader source code to the shader object and compile the shader 
@@ -102,33 +129,6 @@ int main(void)
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
-
-    GLFWwindow* window;
-
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(1600, 1024, "Shape and Physics", NULL, NULL);
-
-    if (!window)
-    {
-        std::cout << "Failed to creat GLFW Window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
-
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
-    
-    gladLoadGL();
-
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-
-        std::cout << "Failed to Load GLAD" << std::endl;
-        return -1;
-
-    }
 
 
      /* The size of the rendering window */
