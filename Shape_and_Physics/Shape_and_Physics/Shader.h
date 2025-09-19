@@ -5,10 +5,12 @@
 #include <glad/glad.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <cerrno>
+#include <cstdio>
 
-std::string get_file_contant(const char* file);   // To convert a file into a char
+std::string get_file_contents(const char* filename);   // To convert a file into a char
 
 class Shader
 {
