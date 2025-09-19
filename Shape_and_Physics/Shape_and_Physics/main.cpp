@@ -104,13 +104,17 @@ int main(void)
     glEnableVertexAttribArray(0);
 
 
+    /* New verts for square */
+
     float vertices[] = {
          0.5f,  0.5f, 0.0f,  // top right
          0.5f, -0.5f, 0.0f,  // bottom right
         -0.5f, -0.5f, 0.0f,  // bottom left
         -0.5f,  0.5f, 0.0f   // top left 
     };
-    GLuint indices[] = {  // note that we start from 0!
+
+    /*The indices for the square*/
+    GLuint indices[] = {
         0, 1, 3,   // first triangle
         1, 2, 3    // second triangle
     };
