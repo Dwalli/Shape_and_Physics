@@ -54,9 +54,9 @@ Shader::Shader(const char* vertex_shader, const char* fragment_shader)
     glDeleteShader(fragmentShader);
 
 
-    // then set the vertex attributes pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    //// then set the vertex attributes pointers
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    //glEnableVertexAttribArray(0);
 
 }
 

@@ -65,7 +65,7 @@ int main(void)
     };
 
     /*The indices for the square*/
-    float indices[] = {
+    GLuint indices[] = {
         0, 1, 3,   // first triangle
         1, 2, 3    // second triangle
     };
@@ -98,7 +98,7 @@ int main(void)
         //Bind VAO so openGL know when to use it
         VAO1.Bind();
 
-        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

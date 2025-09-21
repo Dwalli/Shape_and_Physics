@@ -2,10 +2,10 @@
 
 VAO::VAO()
 {
-	glGenBuffers(1, &ID);
+	glGenVertexArrays(1, &ID);
 }
 
-void VAO::LinkVBO(GLuint Layout, VBO VBO)
+void VAO::LinkVBO(GLuint Layout, VBO& VBO)
 {
 	VBO.Bind();
 	glVertexAttribPointer(Layout, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);

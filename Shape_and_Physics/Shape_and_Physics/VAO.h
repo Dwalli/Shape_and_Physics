@@ -12,7 +12,7 @@ public:
 
 	VAO();
 
-	void LinkVBO(GLuint Layout, VBO VBO);
+	void LinkVBO(GLuint Layout, VBO& VBO);
 	void Bind();
 	void Unbind();
 	void Deactivate();
@@ -20,7 +20,7 @@ public:
 };
 
 
-#endif // !EBO_H
+#endif // !VAO_H
 
 
 

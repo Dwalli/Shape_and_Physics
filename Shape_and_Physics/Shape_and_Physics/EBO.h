@@ -11,7 +11,7 @@ class EBO
 public:
 	GLuint ID;
 
-	EBO(GLfloat* indices, GLsizeiptr size); // To crate the EBO of an shape
+	EBO(GLuint* indices, GLsizeiptr size); // To crate the EBO of an shape
 
 	void Bind();
 	void Unbind();
@@ -19,4 +19,5 @@ public:
 };
 
 #endif // !EBO_H
+
 

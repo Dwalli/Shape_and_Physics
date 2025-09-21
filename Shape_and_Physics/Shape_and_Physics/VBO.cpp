@@ -2,14 +2,14 @@
 
 VBO::VBO(GLfloat* vertices, GLsizeiptr size)
 {
-    glGenVertexArrays(1, &ID);
+    glGenBuffers(1, &ID);
 
     glBindBuffer(GL_ARRAY_BUFFER, ID);
     glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
 }
 
-void VBO::Bind()
+void VBO::Bind()    
 {
     glBindBuffer(GL_ARRAY_BUFFER, ID);
 }
