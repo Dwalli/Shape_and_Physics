@@ -1,5 +1,6 @@
 #include "EBO.h"
 
+// The contructor that will generate the LEMENT_ARRAY_BUFFER and lint it to the indices
 EBO::EBO(GLuint* indices, GLsizeiptr size)
 {
     glGenBuffers(1, &ID);

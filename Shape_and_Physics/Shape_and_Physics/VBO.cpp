@@ -1,5 +1,6 @@
 #include "VBO.h"
 
+// The contructor that will generate the vertex buffer and lint it to the vertices
 VBO::VBO(GLfloat* vertices, GLsizeiptr size)
 {
     glGenBuffers(1, &ID);

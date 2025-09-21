@@ -5,6 +5,7 @@ VAO::VAO()
 	glGenVertexArrays(1, &ID);
 }
 
+// linking the vbo with the vao
 void VAO::LinkVBO(GLuint Layout, VBO& VBO)
 {
 	VBO.Bind();

@@ -70,15 +70,22 @@ int main(void)
         1, 2, 3    // second triangle
     };
 
-
+    // generate the shaders
     Shader shaderprogram("Defualt.vert", "Defualt.frag");
 
+
+    // creat the vao and then binds it
     VAO VAO1;
     VAO1.Bind();
+
+	//Give the EBO and VBO the indices and the vertices, and generate the vertex buffer and the element buffer
     VBO VBO1(vertices, sizeof(vertices));
     EBO EBO1(indices, sizeof(indices));
 
+	// link the VBO with the VAO
     VAO1.LinkVBO(0, VBO1);
+
+    // unbind all to prevent accidentally modifycation 
     VAO1.Unbind();
     VBO1.Unbind();
     EBO1.Unbind();
