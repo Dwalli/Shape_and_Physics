@@ -13,6 +13,27 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 
+/* New verts for square */
+
+float vertices[] = {
+        //     Cordiants                             r,    g,     b//
+    -0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower left corner
+     0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower right corner
+     0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f,     1.0f, 0.6f,  0.32f, // Upper corner
+    -0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner left
+     0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner right
+     0.0f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f  // Inner down
+};
+
+/*The indices for the square*/
+GLuint indices[] = {
+    0, 3, 5, // Lower left triangle
+    3, 2, 4, // Lower right triangle
+    5, 4, 1 // Upper triangle
+};
+
+
+
 int main(void)
 {
     /* Initialize the library */
@@ -55,25 +76,6 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 
-    /* New verts for square */
-
-    float vertices[] = {
-		//     Cordiants                             r,    g,     b//
-    -0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower left corner
-     0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower right corner
-     0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f,     1.0f, 0.6f,  0.32f, // Upper corner
-    -0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner left
-     0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner right
-     0.0f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f  // Inner down
-    };
-
-    /*The indices for the square*/
-    GLuint indices[] = {
-    0, 3, 5, // Lower left triangle
-    3, 2, 4, // Lower right triangle
-    5, 4, 1 // Upper triangle
-    };
-
     // generate the shaders
     Shader shaderprogram("Defualt.vert", "Defualt.frag");
 
@@ -87,8 +89,8 @@ int main(void)
     EBO EBO1(indices, sizeof(indices));
 
 	// link the VBO with the VAO
-    VAO1.LinkAtribute(0, VBO1, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-	VAO1.LinkAtribute(1, VBO1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    VAO1.LinkAtribute(VBO1, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
+	VAO1.LinkAtribute(VBO1, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
     // unbind all to prevent accidentally modifycation 
     VAO1.Unbind();
@@ -96,7 +98,8 @@ int main(void)
     EBO1.Unbind();
 
 
-
+    GLuint uniID = glGetUniformLocation(shaderprogram.ID, "scale");
+    
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) // purple
@@ -106,6 +109,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         shaderprogram.Activate();
+		glUniform1f(uniID, 0.2f);
 
         //Bind VAO so openGL know when to use it
         VAO1.Bind();
