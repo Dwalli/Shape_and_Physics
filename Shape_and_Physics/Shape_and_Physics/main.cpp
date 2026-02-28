@@ -13,7 +13,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 
-/* New verts for square */
 
 float vertices[] = {
         //     Cordiants                             r,    g,     b//
@@ -25,7 +24,6 @@ float vertices[] = {
      0.0f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f  // Inner down
 };
 
-/*The indices for the square*/
 GLuint indices[] = {
     0, 3, 5, // Lower left triangle
     3, 2, 4, // Lower right triangle
