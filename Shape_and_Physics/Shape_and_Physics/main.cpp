@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include <stb/stb_image.h>
+
 #include "Shader.h"
 #include "VBO.h"
 #include "VAO.h"
@@ -13,21 +15,17 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 
-
 float vertices[] = {
-        //     Cordiants                             r,    g,     b//
-    -0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower left corner
-     0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower right corner
-     0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f,     1.0f, 0.6f,  0.32f, // Upper corner
-    -0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner left
-     0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner right
-     0.0f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f  // Inner down
+	// Positions        // Colors (RGB)     // Texture Coords (UV)
+    -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom left
+     0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // Bottom right
+     0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // Top right
+    -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f  // Top left
 };
 
 GLuint indices[] = {
-    0, 3, 5, // Lower left triangle
-    3, 2, 4, // Lower right triangle
-    5, 4, 1 // Upper triangle
+    0, 1, 2,  // First triangle (bottom right)
+    0, 2, 3   // Second triangle (top left)
 };
 
 
@@ -87,8 +85,9 @@ int main(void)
     EBO EBO1(indices, sizeof(indices));
 
 	// link the VBO with the VAO
-    VAO1.LinkAtribute(VBO1, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-	VAO1.LinkAtribute(VBO1, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    VAO1.LinkAtribute(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+	VAO1.LinkAtribute(VBO1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    VAO1.LinkAtribute(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
     // unbind all to prevent accidentally modifycation 
     VAO1.Unbind();
@@ -98,6 +97,33 @@ int main(void)
 
     GLuint uniID = glGetUniformLocation(shaderprogram.ID, "scale");
     
+    //Texturs
+	int widthImage, heightImage, numColChanels;
+    stbi_set_flip_vertically_on_load(true);
+	unsigned char* bytes = stbi_load("Brick_Wall.jpg", &widthImage, &heightImage, &numColChanels, 0);
+
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widthImage, heightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, bytes);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+	stbi_image_free(bytes);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	GLuint uniTex0 = glGetUniformLocation(shaderprogram.ID, "tex0");
+	shaderprogram.Activate();
+	glUniform1i(uniTex0, 0);
+
+
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) // purple
@@ -107,7 +133,9 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         shaderprogram.Activate();
-		glUniform1f(uniID, 0.2f);
+		glUniform1f(uniID, 0.5f);
+
+        glBindTexture(GL_TEXTURE_2D, texture);
 
         //Bind VAO so openGL know when to use it
         VAO1.Bind();
@@ -124,6 +152,7 @@ int main(void)
     VAO1.Deactivate();
     VBO1.Deactivate();
     EBO1.Deactivate();
+	glDeleteTextures(1, &texture);
 	shaderprogram.Deactivate();
 
     glfwTerminate();
