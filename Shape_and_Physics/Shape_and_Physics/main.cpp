@@ -2,12 +2,18 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <stb/stb_image.h>
 
 #include "Shader.h"
 #include "VBO.h"
 #include "VAO.h"
 #include "EBO.h"
+#include "Texture.h"
+
 
 /* new window dimention when window is resized */
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -15,23 +21,32 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 
-float vertices[] = {
-	// Positions        // Colors (RGB)     // Texture Coords (UV)
-    -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom left
-     0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // Bottom right
-     0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // Top right
-    -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f  // Top left
+// Vertices coordinates
+GLfloat vertices[] =
+{ //     COORDINATES     /        COLORS      /   TexCoord  //
+    -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
+    -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
+     0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
+     0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
+     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	2.5f, 5.0f
 };
 
-GLuint indices[] = {
-    0, 1, 2,  // First triangle (bottom right)
-    0, 2, 3   // Second triangle (top left)
+// Indices for vertices order
+GLuint indices[] =
+{
+    0, 1, 2,
+    0, 2, 3,
+    0, 1, 4,
+    1, 2, 4,
+    2, 3, 4,
+    3, 0, 4
 };
 
 
 
 int main(void)
 {
+    
     /* Initialize the library */
     glfwInit();
 
@@ -71,10 +86,10 @@ int main(void)
      /* The size of the rendering window */
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-
+    glEnable(GL_DEPTH_TEST);
     // generate the shaders
     Shader shaderprogram("Defualt.vert", "Defualt.frag");
-
+    
 
     // creat the vao and then binds it
     VAO VAO1;
@@ -95,33 +110,9 @@ int main(void)
     EBO1.Unbind();
 
 
-    GLuint uniID = glGetUniformLocation(shaderprogram.ID, "scale");
-    
-    //Texturs
-	int widthImage, heightImage, numColChanels;
-    stbi_set_flip_vertically_on_load(true);
-	unsigned char* bytes = stbi_load("Brick_Wall.jpg", &widthImage, &heightImage, &numColChanels, 0);
-
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widthImage, heightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, bytes);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-	stbi_image_free(bytes);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	GLuint uniTex0 = glGetUniformLocation(shaderprogram.ID, "tex0");
-	shaderprogram.Activate();
-	glUniform1i(uniTex0, 0);
+    // generate the texture
+    Texture texture("Brick_Wall.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE);
+    texture.TextureUnit(shaderprogram, "tex0", 0);
 
 
 
@@ -130,12 +121,30 @@ int main(void)
     {
         /*set the fram color buffer in RGB values*/
         glClearColor(0.7f, 0.0f, 0.8f, 0.4f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderprogram.Activate();
-		glUniform1f(uniID, 0.5f);
+        
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
 
-        glBindTexture(GL_TEXTURE_2D, texture);
+		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::translate(view, glm::vec3(0.0f, -0.2f, -2.0f));
+
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+          
+        int modelLoc = glGetUniformLocation(shaderprogram.ID, "model");
+        int viewLoc = glGetUniformLocation(shaderprogram.ID, "view");
+        int projectionLoc = glGetUniformLocation(shaderprogram.ID, "projection");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+	
+		glUniform1f(glGetUniformLocation(shaderprogram.ID, "scale"), 1.0f);
+		texture.Bind();
 
         //Bind VAO so openGL know when to use it
         VAO1.Bind();
@@ -152,7 +161,7 @@ int main(void)
     VAO1.Deactivate();
     VBO1.Deactivate();
     EBO1.Deactivate();
-	glDeleteTextures(1, &texture);
+	texture.Deactivate();
 	shaderprogram.Deactivate();
 
     glfwTerminate();
