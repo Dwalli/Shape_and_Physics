@@ -46,6 +46,42 @@ GLuint indices[] =
 };
 
 
+// cube vertices and indices
+GLfloat cubVertices[] =
+{
+    // positions           // colors           // tex coords
+    -0.25f, -0.25f,  0.25f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
+     0.25f, -0.25f,  0.25f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+     0.25f,  0.25f,  0.25f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f,
+    -0.25f,  0.25f,  0.25f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+
+    -0.25f, -0.25f, -0.25f,  1.0f, 0.0f, 1.0f,  1.0f, 0.0f,
+     0.25f, -0.25f, -0.25f,  0.0f, 1.0f, 1.0f,  0.0f, 0.0f,
+     0.25f,  0.25f, -0.25f,  0.5f, 0.5f, 0.5f,  0.0f, 1.0f,
+    -0.25f,  0.25f, -0.25f,  1.0f, 1.0f, 1.0f,  1.0f, 1.0f
+};
+
+GLuint cubIndices[] =
+{
+    // front
+    0, 1, 2,
+    0, 2, 3,
+    // right
+    1, 5, 6,
+    1, 6, 2,
+    // back
+    5, 4, 7,
+    5, 7, 6,
+    // left
+    4, 0, 3,
+    4, 3, 7,
+    // top
+    3, 2, 6,
+    3, 6, 7,
+    // bottom
+    4, 5, 1,
+    4, 1, 0
+};
 
 int main(void)
 {
@@ -90,6 +126,29 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     glEnable(GL_DEPTH_TEST);
+    //////////////////////////////////////////////////////////////////////////////
+	Shader lightShader("Light.vert", "Light.frag");
+
+    // creat the vao and then binds it
+    VAO VAO2;
+    VAO2.Bind();
+    
+    //Give the EBO and VBO the indices and the vertices, and generate the vertex buffer and the element buffer
+    VBO VBO2(cubVertices, sizeof(cubVertices));
+    EBO EBO2(cubIndices, sizeof(cubIndices));
+
+    // link the VBO with the VAO
+    VAO2.LinkAtribute(VBO2, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+    VAO2.LinkAtribute(VBO2, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    VAO2.LinkAtribute(VBO2, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+    // unbind all to prevent accidentally modifycation 
+    VAO2.Unbind();
+    VBO2.Unbind();
+    EBO2.Unbind();
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
     // generate the shaders
     Shader shaderprogram("Defualt.vert", "Defualt.frag");
     
@@ -111,6 +170,26 @@ int main(void)
     VAO1.Unbind();
     VBO1.Unbind();
     EBO1.Unbind();
+    //////////////////////////////////////////////////////////////////////////
+
+    glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
+    glm::mat4 lightModel = glm::mat4(1.0f);
+    lightModel = glm::translate(lightModel, lightPos);
+
+    glm::vec3 pyramidPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::mat4 pyramidModel = glm::mat4(1.0f);
+    pyramidModel = glm::translate(pyramidModel, pyramidPos);
+
+	lightShader.Activate();
+    glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+	glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+
+
+	shaderprogram.Activate();
+	glUniformMatrix4fv(glGetUniformLocation(shaderprogram.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
+	glUniform4f(glGetUniformLocation(shaderprogram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+	glUniform3f(glGetUniformLocation(shaderprogram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 
     // generate the texture
@@ -124,21 +203,26 @@ int main(void)
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) // purple
     {
-        /*set the fram color buffer in RGB values*/
         glClearColor(0.7f, 0.0f, 0.8f, 0.4f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        camera.Inputs(window);
+        camera.UpdateCamMatrix(45.0f, 0.1f, 100.0f);
+
+		// activate the shader for the pyramid and bind the texture, then draw the pyramid
         shaderprogram.Activate();
-
-		camera.Inputs(window);
-		camera.CamMatrix(45.0f, 0.1f, 100.0f, shaderprogram, "camMatrix");
-
 		texture.Bind();
-
-        //Bind VAO so openGL know when to use it
         VAO1.Bind();
-
+        camera.camMatrix(shaderprogram, "camMatrix");
         glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+
+		// activate the shader for the light and draw the light
+		lightShader.Activate();
+        glClearColor(0.7f, 0.0f, 0.8f, 0.4f);
+        VAO2.Bind();
+        camera.camMatrix(lightShader, "camMatrix");
+        glDrawElements(GL_TRIANGLES, sizeof(cubIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -150,8 +234,16 @@ int main(void)
     VAO1.Deactivate();
     VBO1.Deactivate();
     EBO1.Deactivate();
+
+    VAO2.Deactivate();
+    VBO2.Deactivate();
+    EBO2.Deactivate();
+
 	texture.Deactivate();
+
 	shaderprogram.Deactivate();
+
+	lightShader.Deactivate();
 
     glfwTerminate();
     return 0;
