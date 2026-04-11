@@ -6,6 +6,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Camera.h"
+
+
 #include <stb/stb_image.h>
 
 #include "Shader.h"
@@ -13,8 +16,6 @@
 #include "VAO.h"
 #include "EBO.h"
 #include "Texture.h"
-
-#include "camera.h"
 
 
 /* new window dimention when window is resized */
@@ -50,11 +51,7 @@ int main(void)
 {
     
     /* Initialize the library */
-    if (!glfwInit())
-    {
-        std::cout << "Failed to initialize GLFW" << std::endl;
-        return -1;
-    }
+    glfwInit();
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -77,15 +74,13 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-
+    
     gladLoadGL();
 
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 
         std::cout << "Failed to Load GLAD" << std::endl;
-        glfwDestroyWindow(window);
-        glfwTerminate();
         return -1;
 
     }
@@ -93,7 +88,6 @@ int main(void)
 
      /* The size of the rendering window */
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glViewport(0, 0, 1600, 1024);
 
     glEnable(GL_DEPTH_TEST);
     // generate the shaders
@@ -118,31 +112,26 @@ int main(void)
     VBO1.Unbind();
     EBO1.Unbind();
 
-    glEnable(GL_DEPTH_TEST);
 
     // generate the texture
     Texture texture("Brick_Wall.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE);
     texture.TextureUnit(shaderprogram, "tex0", 0);
 
-    Camera camera(1600, 1024, glm::vec3(0.0f, 0.0f, 2.0f));
-    glfwSetWindowUserPointer(window, &camera);
+
+	//set up the camera
+	Camera camera(1600, 1024, glm::vec3(0.0f, 0.0f, 2.0f));
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) // purple
     {
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        {
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
-        }
-
         /*set the fram color buffer in RGB values*/
         glClearColor(0.7f, 0.0f, 0.8f, 0.4f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderprogram.Activate();
-        
-		camera.updateMatrix(45.0f, 0.1f, 100.0f, shaderprogram, "camMatrix");
+
 		camera.Inputs(window);
+		camera.CamMatrix(45.0f, 0.1f, 100.0f, shaderprogram, "camMatrix");
 
 		texture.Bind();
 
@@ -164,7 +153,6 @@ int main(void)
 	texture.Deactivate();
 	shaderprogram.Deactivate();
 
-    glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
 }

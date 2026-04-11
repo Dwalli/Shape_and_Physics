@@ -13,7 +13,7 @@
 /// Operations between components of a type
 
 #pragma once
-
+#define GLM_ENABLE_EXPERIMENTAL
 // Dependencies
 #include "../detail/setup.hpp"
 #include "../detail/qualifier.hpp"

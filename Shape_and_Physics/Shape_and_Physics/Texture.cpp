@@ -8,11 +8,6 @@ Texture::Texture(const char* image, GLuint TexType, GLuint TexSlot, GLenum forma
 
 	stbi_set_flip_vertically_on_load(true);
 	unsigned char* bytes = stbi_load(image, &widthImage, &heightImage, &numColChanels, 0);
-	if (bytes == nullptr)
-	{
-		std::cout << "Failed to load texture: " << image << std::endl;
-		return;
-	}
 
 	glGenTextures(1, &ID);
 	glActiveTexture(TexSlot);
@@ -33,9 +28,9 @@ Texture::Texture(const char* image, GLuint TexType, GLuint TexSlot, GLenum forma
 
 void Texture::TextureUnit(Shader shadeer, const char* uniform, GLuint uniSlot)
 {
-	GLint textureUniform = glGetUniformLocation(shadeer.ID, uniform);
+	uniSlot = glGetUniformLocation(shadeer.ID, uniform);
 	shadeer.Activate();
-	glUniform1i(textureUniform, uniSlot);
+	glUniform1i(uniSlot, 0);
 }
 
 void Texture::Bind()
