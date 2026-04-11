@@ -1,5 +1,33 @@
 #include "Shader.h"
 
+namespace
+{
+    void checkCompileErrors(GLuint shader, const char* stage)
+    {
+        GLint success = 0;
+        GLchar infoLog[1024];
+
+        if (std::string(stage) == "PROGRAM")
+        {
+            glGetProgramiv(shader, GL_LINK_STATUS, &success);
+            if (!success)
+            {
+                glGetProgramInfoLog(shader, sizeof(infoLog), nullptr, infoLog);
+                std::cout << "Shader program linking failed:\n" << infoLog << std::endl;
+            }
+        }
+        else
+        {
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                glGetShaderInfoLog(shader, sizeof(infoLog), nullptr, infoLog);
+                std::cout << stage << " shader compilation failed:\n" << infoLog << std::endl;
+            }
+        }
+    }
+}
+
 std::string get_file_contents(const char* filename)
 {
     std::ifstream in(filename, std::ios::in | std::ios::binary);
@@ -13,6 +41,8 @@ std::string get_file_contents(const char* filename)
         in.close();
         return(contents);
     }
+
+    std::cout << "Failed to open shader file: " << filename << std::endl;
     throw(errno);
 }
 
@@ -31,6 +61,7 @@ Shader::Shader(const char* vertex_shader, const char* fragment_shader)
     // attach the shader source code to the shader object and compile the shader 
     glShaderSource(vertexShader, 1, &vertexSouce, NULL);
     glCompileShader(vertexShader);
+    checkCompileErrors(vertexShader, "VERTEX");
 
 
 
@@ -41,12 +72,14 @@ Shader::Shader(const char* vertex_shader, const char* fragment_shader)
     // attach the shader source code to the shader object and compile the shader 
     glShaderSource(fragmentShader, 1, &fragmentSouce, NULL);
     glCompileShader(fragmentShader);
+    checkCompileErrors(fragmentShader, "FRAGMENT");
 
 
     ID = glCreateProgram();
     glAttachShader(ID, vertexShader);
     glAttachShader(ID, fragmentShader);
     glLinkProgram(ID);
+    checkCompileErrors(ID, "PROGRAM");
 
 
     // delete old shader object as they are now within the shader program

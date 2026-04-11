@@ -12,8 +12,8 @@
 class Texture
 {
 public:
-	GLuint ID;
-	GLuint type;
+	GLuint ID = 0;
+	GLuint type = 0;
 	//      image path,       texture type,    texture slot,  format of the pixel and the data type of the pixel
 	Texture(const char* image, GLuint TexType, GLuint TexSlot, GLenum format, GLenum pixeltype);
 

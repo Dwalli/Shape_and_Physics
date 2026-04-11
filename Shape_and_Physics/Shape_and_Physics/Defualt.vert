@@ -9,14 +9,12 @@ out vec2 texCoords;
 // control the scale of the vertices
 uniform float scale;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 camMatrix;
 
 void main()
 {
     //gl_Position = vec4(aPos.x + aPos.x * scale, aPos.y + aPos.y * scale, aPos.z + aPos.z * scale, 1.0);   // whatever we set gl_Position to will be used as the output of the vertex shader.
-    gl_Position = projection * view * model * vec4(aPos * scale, 1.0);
+    gl_Position = camMatrix * vec4(aPos, 1.0);
     color = aColor;
     texCoords = aTex;
 }

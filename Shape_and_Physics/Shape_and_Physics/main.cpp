@@ -14,6 +14,8 @@
 #include "EBO.h"
 #include "Texture.h"
 
+#include "camera.h"
+
 
 /* new window dimention when window is resized */
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -48,7 +50,11 @@ int main(void)
 {
     
     /* Initialize the library */
-    glfwInit();
+    if (!glfwInit())
+    {
+        std::cout << "Failed to initialize GLFW" << std::endl;
+        return -1;
+    }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -71,13 +77,15 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-    
+
     gladLoadGL();
 
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 
         std::cout << "Failed to Load GLAD" << std::endl;
+        glfwDestroyWindow(window);
+        glfwTerminate();
         return -1;
 
     }
@@ -85,6 +93,7 @@ int main(void)
 
      /* The size of the rendering window */
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glViewport(0, 0, 1600, 1024);
 
     glEnable(GL_DEPTH_TEST);
     // generate the shaders
@@ -109,41 +118,32 @@ int main(void)
     VBO1.Unbind();
     EBO1.Unbind();
 
+    glEnable(GL_DEPTH_TEST);
 
     // generate the texture
     Texture texture("Brick_Wall.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE);
     texture.TextureUnit(shaderprogram, "tex0", 0);
 
-
+    Camera camera(1600, 1024, glm::vec3(0.0f, 0.0f, 2.0f));
+    glfwSetWindowUserPointer(window, &camera);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) // purple
     {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        {
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+        }
+
         /*set the fram color buffer in RGB values*/
         glClearColor(0.7f, 0.0f, 0.8f, 0.4f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderprogram.Activate();
         
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 projection = glm::mat4(1.0f);
+		camera.updateMatrix(45.0f, 0.1f, 100.0f, shaderprogram, "camMatrix");
+		camera.Inputs(window);
 
-		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        view = glm::translate(view, glm::vec3(0.0f, -0.2f, -2.0f));
-
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-        projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
-          
-        int modelLoc = glGetUniformLocation(shaderprogram.ID, "model");
-        int viewLoc = glGetUniformLocation(shaderprogram.ID, "view");
-        int projectionLoc = glGetUniformLocation(shaderprogram.ID, "projection");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-	
-		glUniform1f(glGetUniformLocation(shaderprogram.ID, "scale"), 1.0f);
 		texture.Bind();
 
         //Bind VAO so openGL know when to use it
@@ -164,6 +164,7 @@ int main(void)
 	texture.Deactivate();
 	shaderprogram.Deactivate();
 
+    glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
 }
