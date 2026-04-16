@@ -163,6 +163,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Pictures\AI texturs\Brick_Wall.jpg" />
+    <Image Include="Tile.jpg" />
+    <Image Include="Tile_bump.jpg" />
+    <Image Include="Tile_normal.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

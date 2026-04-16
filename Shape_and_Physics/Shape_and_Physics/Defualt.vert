@@ -18,7 +18,6 @@ uniform mat4 model;
 void main()
 {
     currentPos = vec3(model * vec4(aPos, 1.0f));
-    //gl_Position = vec4(aPos.x + aPos.x * scale, aPos.y + aPos.y * scale, aPos.z + aPos.z * scale, 1.0);   // whatever we set gl_Position to will be used as the output of the vertex shader.
     gl_Position = camMatrix * vec4(currentPos, 1.0);
     color = aColor;
     texCoords = aTex;

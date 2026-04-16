@@ -87,5 +87,14 @@
     <Image Include="..\..\..\..\..\Pictures\AI texturs\Brick_Wall.jpg">
       <Filter>Resource Files\Textures</Filter>
     </Image>
+    <Image Include="Tile_bump.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="Tile_normal.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="Tile.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>

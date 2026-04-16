@@ -10,7 +10,8 @@ Texture::Texture(const char* image, GLuint TexType, GLuint TexSlot, GLenum forma
 	unsigned char* bytes = stbi_load(image, &widthImage, &heightImage, &numColChanels, 0);
 
 	glGenTextures(1, &ID);
-	glActiveTexture(TexSlot);
+	glActiveTexture(GL_TEXTURE0 + TexSlot);
+	UID = TexSlot;
 	glBindTexture(type, ID);
 
 	glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -35,6 +36,7 @@ void Texture::TextureUnit(Shader shadeer, const char* uniform, GLuint uniSlot)
 
 void Texture::Bind()
 {
+	glActiveTexture(GL_TEXTURE0 + UID);
 	glBindTexture(GL_TEXTURE_2D, ID);
 }
 

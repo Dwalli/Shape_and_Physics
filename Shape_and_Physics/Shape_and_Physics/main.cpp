@@ -105,6 +105,22 @@ GLuint cubIndices[] =
     4, 1, 0
 };
 
+GLfloat planeVertices[] =
+{
+    // positions             // colors           // tex coords   // normals
+    -5.0f, 0.0f, -5.0f,      1.0f, 1.0f, 1.0f,   0.0f, 5.0f,    0.0f, 1.0f, 0.0f,
+     5.0f, 0.0f, -5.0f,      1.0f, 1.0f, 1.0f,   5.0f, 5.0f,    0.0f, 1.0f, 0.0f,
+     5.0f, 0.0f,  5.0f,      1.0f, 1.0f, 1.0f,   5.0f, 0.0f,    0.0f, 1.0f, 0.0f,
+    -5.0f, 0.0f,  5.0f,      1.0f, 1.0f, 1.0f,   0.0f, 0.0f,    0.0f, 1.0f, 0.0f
+};
+
+GLuint planeIndices[] =
+{
+    0, 1, 2,
+    0, 2, 3
+};
+
+
 int main(void)
 {
     
@@ -148,6 +164,28 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     glEnable(GL_DEPTH_TEST);
+    //////////////////////////////////////////////////////////////////////////////
+    Shader planeShader("Defualt.vert", "Defualt.frag");
+
+    // creat the vao and then binds it
+    VAO PlaneVAO;
+    PlaneVAO.Bind();
+
+    //Give the EBO and VBO the indices and the vertices, and generate the vertex buffer and the element buffer
+    VBO PlaneVBO(planeVertices, sizeof(planeVertices));
+    EBO PlaneEBO(planeIndices, sizeof(planeIndices));
+
+    // link the VBO with the VAO
+    PlaneVAO.LinkAtribute(PlaneVBO, 0, 3, GL_FLOAT, 11 * sizeof(float), (void*)0);
+    PlaneVAO.LinkAtribute(PlaneVBO, 1, 3, GL_FLOAT, 11 * sizeof(float), (void*)(3 * sizeof(float)));
+    PlaneVAO.LinkAtribute(PlaneVBO, 2, 2, GL_FLOAT, 11 * sizeof(float), (void*)(6 * sizeof(float)));
+    PlaneVAO.LinkAtribute(PlaneVBO, 3, 3, GL_FLOAT, 11 * sizeof(float), (void*)(8 * sizeof(float)));
+
+    // unbind all to prevent accidentally modifycation 
+    PlaneVAO.Unbind();
+    PlaneVBO.Unbind();
+    PlaneEBO.Unbind();
+
     //////////////////////////////////////////////////////////////////////////////
 	Shader lightShader("Light.vert", "Light.frag");
 
@@ -216,13 +254,26 @@ int main(void)
 	glUniform3f(glGetUniformLocation(shaderprogram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 
+    glm::vec3 planePos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::mat4 planeModel = glm::mat4(1.0f);
+    planeModel = glm::translate(planeModel, planePos);
+
+    planeShader.Activate();
+    glUniformMatrix4fv(glGetUniformLocation(planeShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(planeModel));
+    glUniform4f(glGetUniformLocation(planeShader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+    glUniform3f(glGetUniformLocation(planeShader.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+
+
     // generate the texture
-    Texture texture("Brick_Wall.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE);
+	Texture texture("Brick_Wall.jpg", GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE);
     texture.TextureUnit(shaderprogram, "tex0", 0);
+
+    Texture planeTexture("Tile.jpg", GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB, GL_UNSIGNED_BYTE);
+    planeTexture.TextureUnit(planeShader, "tex1", 1);
 
 
 	//set up the camera
-	Camera camera(1600, 1024, glm::vec3(0.0f, 0.0f, 2.0f));
+	Camera camera(1600, 1024, glm::vec3(0.0f, 2.0f, 2.0f));
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) // purple
@@ -249,6 +300,16 @@ int main(void)
         camera.camMatrix(lightShader, "camMatrix");
         glDrawElements(GL_TRIANGLES, sizeof(cubIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
+
+		// activate the shader for the flat plane and bind the texture, then draw the plane
+        planeShader.Activate();
+        glUniform3f(glGetUniformLocation(planeShader.ID, "camPos"), camera.cameraPos.x, camera.cameraPos.y, camera.cameraPos.z);
+        glClearColor(0.7f, 0.0f, 0.8f, 0.4f);
+        planeTexture.Bind();
+        PlaneVAO.Bind();
+        camera.camMatrix(planeShader, "camMatrix");
+        glDrawElements(GL_TRIANGLES, sizeof(planeIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
@@ -263,6 +324,10 @@ int main(void)
     VAO2.Deactivate();
     VBO2.Deactivate();
     EBO2.Deactivate();
+
+    PlaneVAO.Deactivate();
+    PlaneVBO.Deactivate();
+    PlaneEBO.Deactivate();
 
 	texture.Deactivate();
 
