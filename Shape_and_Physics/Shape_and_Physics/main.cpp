@@ -265,7 +265,7 @@ int main(void)
 
 
     // generate the texture
-	Texture texture("Brick_Wall.jpg", GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE);
+	Texture texture("Brick_Wall.jpg", GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB, GL_UNSIGNED_BYTE);
     texture.TextureUnit(shaderprogram, "tex0", 0);
 
     Texture planeTexture("Tile.jpg", GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB, GL_UNSIGNED_BYTE);
